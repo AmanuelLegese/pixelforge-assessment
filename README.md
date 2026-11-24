@@ -5,18 +5,28 @@ Pixelforge's cost + 25%.
 
 ## Run locally (Docker, Alpine images)
 
+Needs only Docker. The stack is app, queue worker, scheduler, Vite and Postgres.
+
 ```bash
-cp .env.example .env            # set PIXELFORGE_API_KEY and PIXELFORGE_WEBHOOK_SECRET
+cp .env.example .env     # then set PIXELFORGE_API_KEY and PIXELFORGE_WEBHOOK_SECRET
+docker compose build
 docker compose run --rm app composer install
 docker compose run --rm app php artisan key:generate
-docker compose run --rm app php artisan migrate
-docker compose run --rm vite sh -c "npm install && npm run build"
-docker compose up -d app queue scheduler vite    # http://localhost:8000
+docker compose run --rm app sh -c "npm install && npm run build"
+docker compose up -d     # http://localhost:8000
+docker compose exec app php artisan migrate
+docker compose exec app php artisan db:seed --class=DemoSeeder   # optional demo users (password: "password")
 docker compose run --rm app php artisan test
 ```
 
-Expose `http://localhost:8000/webhooks/pixelforge` with a tunnel and set it (plus the `whsec_…` secret) on your key in the Pixelforge dashboard.
-Set `ADMIN_EMAILS` to see `/admin/report`.
+The first `docker compose build` compiles PHP extensions and takes several minutes.
+
+Webhooks need a public URL: expose `http://localhost:8000/webhooks/pixelforge` with a tunnel (Cloudflare Tunnel, ngrok, Expose)
+and set it, plus the `whsec_…` secret, on your key in the Pixelforge dashboard. Without webhooks the scheduler still settles
+generations by polling once a minute.
+
+Set `ADMIN_EMAILS` (comma-separated) to choose who can open `/admin/report`. Machine-specific Docker settings (DNS, shared networks)
+go in `docker-compose.override.yml`, which is git-ignored.
 
 ## How money works
 
