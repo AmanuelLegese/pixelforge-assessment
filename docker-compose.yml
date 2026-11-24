@@ -1,0 +1,32 @@
+networks:
+  shared-network:
+    external: true
+
+x-app: &app
+  build: .
+  volumes:
+    - .:/var/www/html
+  networks:
+    - shared-network
+
+services:
+  app:
+    <<: *app
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    ports:
+      - "8000:8000"
+
+  queue:
+    <<: *app
+    command: php artisan queue:work --tries=3 --timeout=60
+
+  scheduler:
+    <<: *app
+    command: php artisan schedule:work
+
+  vite:
+    <<: *app
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "5173:5173"
+
