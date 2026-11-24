@@ -22,3 +22,10 @@ yarn-error.log
 /.vscode
 /.zed
 docker-compose.override.yml
+
+# Local AI tooling (Laravel Boost)
+/AGENTS.md
+/boost.json
+/.mcp.json
+/.claude
+/.ai
